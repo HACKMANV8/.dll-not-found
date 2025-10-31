@@ -7,7 +7,7 @@ A modern, responsive dashboard for the Gensec security scanning platform.
 - **Navigation Bar**: Logo on left, menu items (Home, About, Pricing) in center, Login/Register on right
 - **Home Page**: Hero section with call-to-action buttons and feature highlights
 - **About Page**: Information about Gensec and its mission
-- **Pricing Page**: Detailed feature list (10 steps) and pricing plans
+- **Pricing Page**: Detailed feature list and pricing plans
 - **Login/Register Modal**: Email-based authentication and GitHub OAuth option (frontend only)
 
 ## Getting Started
@@ -51,16 +51,11 @@ npm run preview
 src/
   ├── components/
   │   ├── NavBar.jsx       # Navigation bar component
-  │   ├── NavBar.css
   │   ├── LoginModal.jsx   # Login/Register modal
-  │   └── LoginModal.css
   ├── pages/
   │   ├── Home.jsx         # Home page
-  │   ├── Home.css
   │   ├── About.jsx         # About page
-  │   ├── About.css
   │   ├── Pricing.jsx      # Pricing page with features
-  │   └── Pricing.css
   ├── App.jsx              # Main app component with routing
   ├── main.jsx             # Entry point
   └── index.css            # Global styles
@@ -71,7 +66,8 @@ src/
 - React 18
 - React Router DOM 6
 - Vite 5
-- CSS3
+- Tailwind CSS 3
+- Space Grotesk Font
 
 ## Notes
 
