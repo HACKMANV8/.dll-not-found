@@ -1,42 +1,58 @@
 import os
 import subprocess
 import json
-from gensec.constants import REPORT_FILE, VULNERABLE_FILE_PATH
+from gensec.constants import REPORT_FILE, WORKSPACE_DIR
 
 def run_scanner(user_plan):
-    print(f"🤖 (Scanner): Running scanners for plan: {user_plan}...")
+    print(f"🤖 (Scanner): Running scanners for plan: {user_plan} on {WORKSPACE_DIR}...")
     try:
         # Clean up old reports
         for f in [REPORT_FILE, "report-gitleaks.json", "report-trivy.json"]:
             if os.path.exists(f):
                 os.remove(f)
 
-        # --- 1. Run Semgrep (All Plans) ---
-        print("ℹ️  (Scanner): Running Semgrep...")
+        # --- 1. Run Semgrep (All Plans) - Multi-Language Support ---
+        print("ℹ️  (Scanner): Running Semgrep with multi-language support...")
         semgrep_command = [
             "semgrep",
-            "--config", "p/gosec",
-            "--config", "p/owasp-top-ten",
+            # Multi-language security rules
+            "--config", "p/owasp-top-ten",      # OWASP Top 10 (all languages)
+            "--config", "p/security-audit",     # Security audit (all languages)
+            # Language-specific rules
+            "--config", "p/python",             # Python security
+            "--config", "p/javascript",        # JavaScript/TypeScript security
+            "--config", "p/java",               # Java security
+            "--config", "p/csharp",             # C# security
+            "--config", "p/gosec",              # Go security
+            "--config", "p/django",             # Django-specific
+            "--config", "p/flask",              # Flask-specific
+            "--config", "p/react",              # React-specific
+            "--config", "p/spring",             # Spring Boot security
+            "--error" # Exit with error code if findings are found
         ]
         if user_plan in ["pro", "enterprise"]:
-            print("ℹ️  (Scanner): Adding Pro Semgrep rules...")
+            print("ℹ️  (Scanner): Adding Pro Semgrep rules (CWE Top 25, additional security checks)...")
             semgrep_command.extend([
-                "--config", "p/security-audit",
-                "--config", "p/cwe-top-25",
+                "--config", "p/cwe-top-25",     # CWE Top 25 vulnerabilities
             ])
-        semgrep_command.extend(["--json", "-o", REPORT_FILE, VULNERABLE_FILE_PATH])
         
+        semgrep_command.extend([
+            "--json", "-o", REPORT_FILE,
+            "--exclude", ".git",  # Exclude the .git folder
+            WORKSPACE_DIR         # Scan the whole directory
+        ]) 
+        
+        # We check for returncode 1, which means "findings found"
         result = subprocess.run(semgrep_command, capture_output=True, text=True, encoding='utf-8')
-        if result.returncode != 0:
-            print(f"⚠️  (Scanner): Semgrep failed. STDERR: {result.stderr.strip()}")
+        if result.returncode not in [0, 1]:
+             print(f"⚠️  (Scanner): Semgrep failed. STDERR: {result.stderr.strip()}")
 
         # --- 2. Run Pro Scanners ---
         if user_plan in ["pro", "enterprise"]:
             print("ℹ️  (Scanner): Running Gitleaks...")
             gitleaks_command = [
                 "gitleaks", "detect",
-                "--no-git",
-                "--source", VULNERABLE_FILE_PATH,
+                "--source", WORKSPACE_DIR,
                 "--report-format", "json",
                 "--report-path", "report-gitleaks.json"
             ]
@@ -44,30 +60,37 @@ def run_scanner(user_plan):
             if result.returncode != 0:
                  print(f"⚠️  (Scanner): Gitleaks failed. STDERR: {result.stderr.strip()}")
 
-            print("ℹ️  (Scanner): Running Trivy...")
+            print("ℹ️  (Scanner): Running Trivy (Filesystem)...")
             trivy_command = [
                 "trivy", "fs",
                 "--format", "json",
                 "--output", "report-trivy.json",
-                VULNERABLE_FILE_PATH
+                WORKSPACE_DIR
             ]
             result = subprocess.run(trivy_command, capture_output=True, text=True, encoding='utf-8')
             if result.returncode != 0:
                  print(f"⚠️  (Scanner): Trivy failed. STDERR: {result.stderr.strip()}")
 
-        # --- 3. Check for any findings ---
+        # --- 3. Check for any findings (IMPROVED LOGIC) ---
         found_vulns = False
         for report_path in [REPORT_FILE, "report-gitleaks.json", "report-trivy.json"]:
             if os.path.exists(report_path) and os.path.getsize(report_path) > 50:
                 try:
                     with open(report_path, 'r', encoding='utf-8') as f:
                         data = json.load(f)
+                    
+                    # Semgrep check: "results" key exists and is not empty
                     if isinstance(data, dict) and data.get("results"):
                         found_vulns = True; break
+                        
+                    # Gitleaks check: data is a list and is not empty
                     if isinstance(data, list) and len(data) > 0:
                         found_vulns = True; break
+                        
+                    # Trivy check: "Results" key exists and is not empty
                     if isinstance(data, dict) and data.get("Results"):
                         found_vulns = True; break
+                        
                 except Exception as e:
                     print(f"⚠️  (Scanner): Could not parse {report_path}. {e}")
         
