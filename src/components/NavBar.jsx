@@ -1,14 +1,34 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import LoginModal from './LoginModal'
 
 function NavBar() {
   const [showLoginModal, setShowLoginModal] = useState(false)
+  const [showUserMenu, setShowUserMenu] = useState(false)
   const navigate = useNavigate()
+  const { user, logout } = useAuth()
+  const userMenuRef = useRef(null)
 
   const handleLogoClick = () => {
     navigate('/')
   }
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setShowUserMenu(false)
+      }
+    }
+
+    if (showUserMenu) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showUserMenu])
 
   return (
     <>
@@ -53,13 +73,45 @@ function NavBar() {
               </Link>
             </div>
 
-            {/* Auth Button */}
-            <button 
-              onClick={() => setShowLoginModal(true)}
-              className="px-8 py-3 bg-white text-black font-black uppercase tracking-wide hover:bg-gray-200 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 border-2 border-white"
-            >
-              Login/Register
-            </button>
+            {/* Auth Section */}
+            {user ? (
+              <div className="relative" ref={userMenuRef}>
+                <button 
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center gap-3 px-6 py-3 bg-white text-black font-black uppercase tracking-wide hover:bg-gray-200 hover:shadow-xl transition-all duration-200 border-2 border-white"
+                >
+                  <div className="w-8 h-8 bg-black text-white flex items-center justify-center font-black text-sm">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="hidden sm:inline">{user.name}</span>
+                </button>
+                
+                {showUserMenu && (
+                  <div className="absolute right-0 mt-2 w-64 bg-black border-2 border-white shadow-xl z-50">
+                    <div className="p-4 border-b-2 border-gray-800">
+                      <p className="text-white font-bold uppercase tracking-wide text-sm">{user.name}</p>
+                      <p className="text-gray-400 text-xs mt-1">{user.email}</p>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        logout()
+                        setShowUserMenu(false)
+                      }}
+                      className="w-full px-4 py-3 text-left text-white font-bold uppercase tracking-wide hover:bg-gray-900 transition-colors"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button 
+                onClick={() => setShowLoginModal(true)}
+                className="px-8 py-3 bg-white text-black font-black uppercase tracking-wide hover:bg-gray-200 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 border-2 border-white"
+              >
+                Login/Register
+              </button>
+            )}
           </div>
         </div>
       </nav>
