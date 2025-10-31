@@ -1,15 +1,14 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
-import { SignedIn, SignedOut, ClerkLoaded } from '@clerk/clerk-react';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate, Outlet } from 'react-router-dom';
+import { SignedIn, SignedOut, ClerkLoaded, useAuth } from '@clerk/clerk-react';
 
 import Home from './pages/Home.jsx';
 import About from './pages/About.jsx';
 import Pricing from './pages/Pricing.jsx';
-import Navbar from './components/Navbar.jsx';
+import Navbar from './components/NavBar.jsx';
+import Dashboard from './pages/Dashboard.jsx';
+import History from './pages/History.jsx';
 
-import Dashboard from './pages/Dashboard.jsx'; 
-
-import { Outlet } from 'react-router-dom';
 function PublicLayout() {
   return (
     <div>
@@ -19,16 +18,33 @@ function PublicLayout() {
   );
 }
 
+function DashboardLayout() {
+  return (
+    <div>
+      <Outlet />
+    </div>
+  );
+}
+
 function PrivateRoutes() {
+  const { isSignedIn } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isSignedIn) {
+      navigate('/');
+    }
+  }, [isSignedIn, navigate]);
 
   return (
     <>
       <SignedIn>
-        <Dashboard />
+        <DashboardLayout>
+          <Outlet />
+        </DashboardLayout>
       </SignedIn>
       <SignedOut>
-        {navigate('/')}
+        <div />
       </SignedOut>
     </>
   );
@@ -47,7 +63,10 @@ function App() {
           <Route
             path="/dashboard"
             element={<PrivateRoutes />}
-          />
+          >
+            <Route index element={<Dashboard />} />
+            <Route path="history" element={<History />} />
+          </Route>
         </Routes>
       </ClerkLoaded>
     </Router>

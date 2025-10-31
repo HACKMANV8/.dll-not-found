@@ -15,22 +15,51 @@ function RepoSelector() {
       try {
         const token = await getToken(); // Get the session token from Clerk
 
-        const res = await fetch('http://localhost:4000/api/github/repos', {
-          headers: {
-            'Authorization': `Bearer ${token}` // Send the token
+        if (!token) {
+          throw new Error('Not authenticated. Please login again.');
+        }
+
+        // Get GitHub token from localStorage if available (from signup)
+        const signupDataStr = localStorage.getItem('signupData');
+        let githubToken = null;
+        if (signupDataStr) {
+          try {
+            const signupData = JSON.parse(signupDataStr);
+            githubToken = signupData.githubToken;
+          } catch (e) {
+            console.log('No GitHub token in localStorage');
           }
+        }
+
+        const headers = {
+          'Authorization': `Bearer ${token}` // Send the Clerk token
+        };
+        
+        // Add GitHub token to header if available
+        if (githubToken) {
+          headers['X-GitHub-Token'] = githubToken;
+        }
+
+        const res = await fetch('http://localhost:4000/api/github/repos', {
+          headers
         });
         
         if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.message || 'Failed to fetch repos');
+          const errorData = await res.json().catch(() => ({ 
+            error: `Server error: ${res.status}`,
+            message: `Server error: ${res.status}` 
+          }));
+          const errorMessage = errorData.message || errorData.error || `Server error: ${res.status}`;
+          console.error('Server error details:', errorData);
+          throw new Error(errorMessage);
         }
 
         const data = await res.json();
         setRepos(data);
 
       } catch (err) {
-        setError(err.message);
+        console.error('Error fetching repos:', err);
+        setError(err.message || 'Failed to fetch repositories. Make sure the server is running and GitHub is connected.');
       } finally {
         setLoading(false);
       }
@@ -79,8 +108,17 @@ function RepoSelector() {
 
   if (error) {
     return (
-      <div className="bg-red-900 border border-red-500 text-red-100 p-4 rounded-lg">
-        <strong>Error:</strong> {error}
+      <div className="bg-gradient-to-br from-red-900 via-red-800 to-red-900 border-2 border-red-500 text-red-100 p-6 rounded-lg">
+        <div className="flex items-center gap-3 mb-2">
+          <strong className="text-lg">Error Loading Repositories:</strong>
+        </div>
+        <p className="text-red-200 mb-4">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded transition-colors"
+        >
+          Retry
+        </button>
       </div>
     );
   }

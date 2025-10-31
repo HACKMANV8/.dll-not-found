@@ -1,47 +1,51 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-// 1. Import the Clerk components
-import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
-import { Shield, Github } from 'lucide-react'; // Assuming you have lucide-react
+import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
+import { Github } from 'lucide-react';
+import CustomSignIn from './CustomSignIn';
 
 export default function Navbar() {
+  const [showSignIn, setShowSignIn] = useState(false);
+
   return (
-    <nav className="w-full bg-gray-900 text-white p-4 flex items-center border-b border-gray-700">
-      {/* Logo */}
-      <div className="flex items-center space-x-2">
-        <Shield className="h-6 w-6 text-blue-500" />
-        <Link to="/" className="text-xl font-bold">GenSec</Link>
-      </div>
+    <>
+      <nav className="w-full bg-gray-900 text-white p-4 flex items-center justify-between border-b border-gray-700">
+        {/* Logo - Left */}
+        <div className="flex items-center space-x-3 min-w-[250px]">
+          <img src="/logo_sec.png" alt="GenSec Logo" className="h-20 w-20" />
+          <Link to="/" className="text-2xl font-bold">GenSec</Link>
+        </div>
 
-      {/* Public Nav Links */}
-      <div className="hidden md:flex flex-1 justify-center space-x-8">
-        <Link to="/" className="hover:text-gray-300">Home</Link>
-        <Link to="/pricing" className="hover:text-gray-300">Pricing</Link>
-        <Link to="/about" className="hover:text-gray-300">About</Link>
+        {/* Navigation Links - Center */}
+        <div className="hidden md:flex items-center justify-center space-x-10 flex-1">
+          <Link to="/" className="text-xl hover:text-gray-300 transition-colors font-medium">Home</Link>
+          <Link to="/pricing" className="text-xl hover:text-gray-300 transition-colors font-medium">Pricing</Link>
+          <Link to="/about" className="text-xl hover:text-gray-300 transition-colors font-medium">About</Link>
+          <SignedIn>
+            <Link to="/dashboard" className="text-xl font-semibold text-blue-400 hover:text-blue-300 transition-colors">
+              Dashboard
+            </Link>
+          </SignedIn>
+        </div>
 
-        {/* 2. Add "Dashboard" link only for signed-in users */}
-        <SignedIn>
-          <Link to="/dashboard" className="font-semibold text-blue-400">
-            Dashboard
-          </Link>
-        </SignedIn>
-      </div>
-
-      <div className="flex-1 flex justify-end">
-        <SignedOut>
-          <SignInButton mode="modal">
+        {/* Login Button - Right */}
+        <div className="flex items-center justify-end min-w-[250px]">
+          <SignedOut>
             <button
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center space-x-2 transition-colors"
+              onClick={() => setShowSignIn(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center space-x-2 transition-colors text-base"
             >
               <Github className="h-5 w-5" />
               <span>Login</span>
             </button>
-          </SignInButton>
-        </SignedOut>
-        <SignedIn>
-          <UserButton afterSignOutUrl="/" />
-        </SignedIn>
-      </div>
-    </nav>
+          </SignedOut>
+          <SignedIn>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
+        </div>
+      </nav>
+      
+      <CustomSignIn isOpen={showSignIn} onClose={() => setShowSignIn(false)} />
+    </>
   );
 }

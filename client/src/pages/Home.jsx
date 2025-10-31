@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Linkedin, Instagram, Mail, Phone } from 'lucide-react'
 
 function Home() {
   return (
@@ -113,6 +114,60 @@ function Home() {
                 Manage and scan multiple GitHub repositories from a unified dashboard with centralized reporting and analytics.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Us Section */}
+      <section className="py-20 bg-black text-white border-t border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-2 uppercase tracking-tight">
+              Contact Us
+            </h2>
+            <div className="w-16 h-0.5 bg-white mx-auto"></div>
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-8 max-w-4xl mx-auto">
+            {/* LinkedIn */}
+            <a 
+              href="https://www.linkedin.com/company/gensec" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
+            >
+              <Linkedin className="w-5 h-5" />
+              <span>LinkedIn</span>
+            </a>
+
+            {/* Instagram */}
+            <a 
+              href="https://www.instagram.com/gensec" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
+            >
+              <Instagram className="w-5 h-5" />
+              <span>Instagram</span>
+            </a>
+
+            {/* Email */}
+            <a 
+              href="mailto:contact@gensec.com" 
+              className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
+            >
+              <Mail className="w-5 h-5" />
+              <span>contact@gensec.com</span>
+            </a>
+
+            {/* Phone */}
+            <a 
+              href="tel:+1234567890" 
+              className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
+            >
+              <Phone className="w-5 h-5" />
+              <span>+1 (234) 567-890</span>
+            </a>
           </div>
         </div>
       </section>

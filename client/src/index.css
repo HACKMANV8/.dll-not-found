@@ -40,3 +40,30 @@
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(to bottom, #f3f4f6, #6b7280);
 }
+
+/* Hide email/password form in Clerk sign-in modal */
+.cl-rootBox [data-localization-key="socialButtonsBlockButton"]:not([data-provider="oauth_github"]),
+.cl-rootBox form:not([data-testid="social-buttons"]),
+.cl-rootBox [data-localization-key="dividerText"],
+.cl-rootBox [data-localization-key="dividerLine"],
+.cl-rootBox [name="identifier"],
+.cl-rootBox [name="password"],
+.cl-rootBox button[type="submit"]:not([data-testid="social-buttons"] button),
+.cl-rootBox [data-localization-key="formFieldLabel"]:not([for*="social"]),
+.cl-rootBox [data-localization-key="formFieldInput"]:not([type*="social"]) {
+  display: none !important;
+}
+
+/* Hide divider if it's between social buttons and form */
+.cl-rootBox [class*="divider"] {
+  display: none !important;
+}
+
+/* Show only GitHub button */
+.cl-rootBox [data-testid="social-buttons"] {
+  display: block !important;
+}
+
+.cl-rootBox [data-provider="oauth_github"] {
+  display: block !important;
+}
