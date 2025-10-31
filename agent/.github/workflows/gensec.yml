@@ -1,0 +1,64 @@
+name: GenSec Agent - Self-Healing
+
+on:
+  schedule:
+    - cron: '0 1 * * *'
+  pull_request:
+    types: [closed]
+  workflow_dispatch:
+
+jobs:
+  run-agent:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true)
+    runs-on: ubuntu-latest
+
+    env:
+      # Set the USER_PLAN for the entire job
+      USER_PLAN: ${{ secrets.USER_PLAN || 'pro' }} # Default to 'pro' if secret isn't set
+      GITHUB_TOKEN: ${{ secrets.GENSEC_AGENT_TOKEN }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      GITHUB_USER: ${{ github.repository_owner }}
+
+    steps:
+      - name: 1. Checkout repository code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+         
+
+      - name: 2. Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: 3. Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: 4. Install Pro Tools (Gitleaks & Trivy)
+        if: env.USER_PLAN == 'pro' || env.USER_PLAN == 'enterprise'
+        run: |
+          echo "Installing Pro tools..."
+          
+          # --- Install Trivy (This part was correct) ---
+          sudo apt-get update
+          sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install -y trivy
+          
+          # --- THIS IS THE FIX FOR GITLEAKS ---
+          # We use two variables: one for the tag (v8.18.4) and one for the asset (8.18.4)
+          GITLEAKS_TAG="v8.18.4"
+          GITLEAKS_VERSION="8.18.4"
+          wget https://github.com/gitleaks/gitleaks/releases/download/${GITLEAKS_TAG}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz
+          tar -xzf gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz
+          sudo mv gitleaks /usr/local/bin/
+          # --- END OF FIX ---
+          
+          echo "--- Verifying installations ---"
+          gitleaks version
+          trivy --version
+
+      - name: 5. Run the GenSec Agent
+        run: python main.py
