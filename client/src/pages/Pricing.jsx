@@ -1,15 +1,12 @@
 function Pricing() {
   return (
     <div className="min-h-screen bg-black text-white relative">
-      {/* Background Pattern Overlay */}
       <div className="fixed inset-0 opacity-30 pointer-events-none">
         <div className="absolute inset-0" style={{
           backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255,255,255,0.1) 1px, transparent 0)`,
           backgroundSize: '40px 40px'
         }}></div>
       </div>
-
-      {/* Header */}
       <section className="relative py-20 border-b-2 border-gray-800 bg-gradient-to-br from-black via-gray-900 to-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-6xl sm:text-7xl font-black mb-6 uppercase tracking-tighter">
@@ -23,7 +20,6 @@ function Pricing() {
       </section>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        {/* Pricing Plans */}
         <section>
           <div className="flex items-center justify-center gap-4 mb-16">
             <div className="w-1 h-16 bg-gradient-to-b from-white to-gray-400"></div>
@@ -32,7 +28,6 @@ function Pricing() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {/* Free Plan */}
             <div className="bg-gradient-to-br from-gray-900 via-black to-gray-900 border-2 border-gray-800 p-10 hover:border-white transition-all duration-300 relative group hover:from-black hover:via-gray-900 hover:to-black">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <div className="mb-8">
@@ -82,7 +77,6 @@ function Pricing() {
               </button>
             </div>
 
-            {/* Pro Plan - Featured */}
             <div className="bg-gradient-to-br from-black via-gray-900 to-black border-4 border-white p-10 relative scale-105 hover:shadow-2xl hover:shadow-white/30 transition-all duration-300 hover:from-gray-900 hover:via-black hover:to-gray-900">
               <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-white to-gray-200 text-black px-8 py-2 text-sm font-black uppercase tracking-wider border-2 border-white">
                 Most Popular
@@ -158,7 +152,6 @@ function Pricing() {
               </button>
             </div>
 
-            {/* Enterprise Plan */}
             <div className="bg-gradient-to-br from-gray-900 via-black to-gray-900 border-2 border-gray-800 p-10 hover:border-white transition-all duration-300 relative group hover:from-black hover:via-gray-900 hover:to-black">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <div className="mb-8">
