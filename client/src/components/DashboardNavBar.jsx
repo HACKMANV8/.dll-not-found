@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { UserButton } from '@clerk/clerk-react';
+import { UserButton, SignedIn } from '@clerk/clerk-react';
 
 export default function DashboardNavBar() {
   const location = useLocation();
@@ -40,7 +40,7 @@ export default function DashboardNavBar() {
       </div>
 
       {/* Logout Button - Right */}
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-end gap-3">
         <UserButton afterSignOutUrl="/" />
       </div>
     </nav>

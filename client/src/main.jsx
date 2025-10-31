@@ -5,11 +5,16 @@ import './index.css';
 import { ClerkProvider } from '@clerk/clerk-react';
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 
-const CLERK_PUBLISHABLE_KEY = "pk_test_c2VsZWN0ZWQtcGFycm90LTM5LmNsZXJrLmFjY291bnRzLmRldiQ";
-const PAYPAL_CLIENT_ID = "AeNGuqcpFpzrOUtho49tMU3vs1el4uvTccOO3z5RXyfte2JbkAT-2sY3Zq-cwiaAstq9FZ6XadxWhFdx";
+// Get environment variables from Vite (from root .env file)
+const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID;
 
 if (!CLERK_PUBLISHABLE_KEY) {
-  throw new Error("Missing Publishable Key. Get it from your Clerk Dashboard.");
+  throw new Error("Missing VITE_CLERK_PUBLISHABLE_KEY. Please set it in the root .env file.");
+}
+
+if (!PAYPAL_CLIENT_ID) {
+  throw new Error("Missing VITE_PAYPAL_CLIENT_ID. Please set it in the root .env file.");
 }
 
 console.log('PayPal Client ID:', PAYPAL_CLIENT_ID);
@@ -40,10 +45,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ClerkProvider 
       publishableKey={CLERK_PUBLISHABLE_KEY}
-      signInUrl="/dashboard"
-      signUpUrl="/dashboard"
-      afterSignInUrl="/dashboard"
-      afterSignUpUrl="/dashboard"
+      signInFallbackRedirectUrl="/dashboard"
+      signUpFallbackRedirectUrl="/dashboard"
       appearance={clerkAppearance}
     >
       <PayPalScriptProvider options={paypalOptions} deferLoading={false}>

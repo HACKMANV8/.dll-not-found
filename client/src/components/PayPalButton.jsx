@@ -1,10 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
 import { CheckCircle, X } from 'lucide-react';
+import { useAuth } from '@clerk/clerk-react';
+import { useNavigate } from 'react-router-dom';
+import { API_ENDPOINTS } from '../config/api.js';
 
 export default function PayPalButton({ plan, amount }) {
   const [{ isPending, isResolved, isRejected }] = usePayPalScriptReducer();
   const [showSuccess, setShowSuccess] = useState(false);
+  const { getToken, isSignedIn } = useAuth();
+  const navigate = useNavigate();
+
+  // Check for pending plan from signup flow
+  useEffect(() => {
+    const pendingPlan = localStorage.getItem('pendingPlan');
+    if (pendingPlan === 'Pro' && plan === 'Pro' && !isSignedIn) {
+      // User came from signup flow but not signed in yet
+      // They'll need to complete signup first
+      console.log('Pending Pro plan - user needs to sign up first');
+    }
+  }, [plan, isSignedIn]);
 
   const createOrder = async (data, actions) => {
     if (amount === 0) {
@@ -25,9 +40,49 @@ export default function PayPalButton({ plan, amount }) {
   };
 
   const onApprove = async (data, actions) => {
-    const order = await actions.order.capture();
-    console.log('Payment successful:', order);
-    setShowSuccess(true);
+    try {
+      const order = await actions.order.capture();
+      console.log('Payment successful:', order);
+      
+      // If user is signed in, update their plan
+      if (isSignedIn && plan === 'Pro') {
+        const token = await getToken();
+        if (token) {
+          // Clear pending plan from localStorage
+          localStorage.removeItem('pendingPlan');
+          
+          // Update user plan to Pro
+                const res = await fetch(API_ENDPOINTS.UPDATE_PLAN, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              plan: 'PRO',
+              paymentId: order.id
+            })
+          });
+          
+          if (res.ok) {
+            console.log('Plan updated to Pro successfully');
+            // Redirect to dashboard after successful payment
+            setTimeout(() => {
+              navigate('/dashboard');
+              window.location.reload();
+            }, 2000);
+          }
+        }
+      } else if (plan === 'Pro' && !isSignedIn) {
+        // Store payment info for after signup
+        localStorage.setItem('pendingPlan', 'Pro');
+        localStorage.setItem('paymentId', order.id);
+      }
+      
+      setShowSuccess(true);
+    } catch (err) {
+      console.error('Error processing payment:', err);
+    }
   };
 
   const onError = (err) => {

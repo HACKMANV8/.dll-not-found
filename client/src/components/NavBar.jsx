@@ -29,7 +29,7 @@ export default function Navbar() {
         </div>
 
         {/* Login Button - Right */}
-        <div className="flex items-center justify-end min-w-[250px]">
+        <div className="flex items-center justify-end gap-3 min-w-[250px]">
           <SignedOut>
             <button
               onClick={() => setShowSignIn(true)}
